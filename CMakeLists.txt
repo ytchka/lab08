@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.4)
+include("cmake/HunterGate.cmake")
+HunterGate(
+URL "https://github.com/cpp-pm/hunter/archive/v0.25.5.tar.gz"
+SHA1 "a20151e4c0740ee7d0f9994476856d813cdead29"
+)
+
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,6 +20,9 @@ set(PRINT_VERSION_TWEAK 0)
 set(PRINT_VERSION
 ${PRINT_VERSION_MAJOR}.${PRINT_VERSION_MINOR}.${PRINT_VERSION_PATCH}.${PRINT_VERSION_TWEAK})
 set(PRINT_VERSION_STRING "v${PRINT_VERSION}")
+hunter_add_package(GTest)
+find_package(GTest CONFIG REQUIRED)
+
 
 add_library(print STATIC ${CMAKE_CURRENT_SOURCE_DIR}/sources/print.cpp)
 
@@ -33,6 +42,10 @@ if(BUILD_EXAMPLES)
     )
   endforeach(EXAMPLE_SOURCE ${EXAMPLE_SOURCES})
 endif()
+add_executable(demo ${CMAKE_CURRENT_SOURCE_DIR}/demo/main.cpp)
+target_link_libraries(demo print)
+ install(TARGETS demo RUNTIME DESTINATION bin)
+
 
 install(TARGETS print
     EXPORT print-config
@@ -44,10 +57,14 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
 install(EXPORT print-config DESTINATION cmake)
 if(BUILD_TESTS)
   enable_testing()
-  add_subdirectory(third-party/gtest)
+  
   file(GLOB ${PROJECT_NAME}_TEST_SOURCES tests/*.cpp)
   add_executable(check ${${PROJECT_NAME}_TEST_SOURCES})
-  target_link_libraries(check ${PROJECT_NAME} gtest_main)
+  target_link_libraries(check ${PROJECT_NAME} GTest::gtest_main)
   add_test(NAME check COMMAND check)
 endif()
+add_executable(demo ${CMAKE_CURRENT_SOURCE_DIR}/demo/main.cpp)
+target_link_libraries(demo print)
+ install(TARGETS demo RUNTIME DESTINATION bin)
+
 include(CPackConfig.cmake)
